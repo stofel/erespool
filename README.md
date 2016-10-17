@@ -31,12 +31,12 @@ Start Pool test_ers_pool with test ers_worker_emulator
 
 Get worker pid
 ```
-{ok, Pid} = ers:get_cons(test_ers_pool).
+{ok, Pid} = ers:get_conn(test_ers_pool).
 ```
 
 Return worker pid to pool
 ```
-ers:ret_cons(test_ers_pool, Pid).
+ers:ret_conn(test_ers_pool, Pid).
 ```
 
 Stop pool
