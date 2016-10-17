@@ -4,6 +4,8 @@
 -export([get_conn/1, get_conn/2, get_conn/3, ret_conn/2]).
 -export([list/0, stat/1, state/1]).
 
+% Misc
+-export([milliseconds/0, random_int/1, random_int/2]).
 
 % tests
 -export([t_start/0, t_stop/0, t/1]).
@@ -31,13 +33,13 @@
 %%
 -spec start(atom(), map()) -> {ok, pid}|err()|{error, supevisor:startchild_err()}.
 start(Name, Args) -> 
-  erespool_pool:start(Name, Args).
+  ers_sup:start_pool(Name, Args).
 
 
 %% @doc Stop the pool, close all workers
 -spec stop(atom()) -> ok|err().
 stop(Name) ->
-  erespool_pool:stop(Name).
+  ers_sup:stop_pool(Name).
 
 
 %% @doc Get a worker pid on 10 seconds lease, 
@@ -56,13 +58,13 @@ get_conn(PoolName, LeaseTime) ->
 %%      wait at most Timeout milliseconds before giving up.
 -spec get_conn(atom(), integer(), integer()) -> {ok, pid()}|timeout|err().
 get_conn(PoolName, LeaseTime, Timeout) ->
-  erespool_pool:get_conn(PoolName, LeaseTime, Timeout).
+  erespool:get_conn(PoolName, LeaseTime, Timeout).
 
 
 %% @doc Retrun worker pid to the pool
 -spec ret_conn(atom(), pid()) -> ok|err().
 ret_conn(PoolName, Conn) -> 
-  erespool_pool:ret_conn(PoolName, Conn).
+  erespool:ret_conn(PoolName, Conn).
   
 
 
@@ -70,21 +72,17 @@ ret_conn(PoolName, Conn) ->
 %% @doc List of pools
 -spec list() -> list().
 list() ->
-  F = fun(Pid) -> 
-    {registered_name, Name} = erlang:process_info(Pid, registered_name),
-    Name
-  end,
-  [F(Pid) || {_,Pid,_,_} <- supervisor:which_children(erespool_sup)].
+  [Name || {Name,_,_,_} <- supervisor:which_children(ers_sup)].
 
 %% @doc Current pool state
 -spec stat(atom()) -> map().
 stat(PoolName) ->
-  erespool_pool:stat(PoolName).
+  erespool:stat(PoolName).
 
 %% @doc Current pool state
 -spec state(atom()) -> map().
 state(PoolName) ->
-  erespool_pool:state(PoolName).
+  erespool:state(PoolName).
 
 
 
@@ -106,7 +104,7 @@ t_stop() ->
   
 t(1) ->
   Name = test_ers_pool,
-  erespool_pool:list(Name);
+  erespool:state(Name);
 
 t(2) ->
   Name = test_ers_pool,
@@ -145,7 +143,7 @@ t(5) ->
       Res = gen_server:call(Conn, ping),
       ?INF("Ping", [Res]),
       %ret_conn(test_ers_pool, Conn);
-      case erespool_misc:random_int(2) > 1 of
+      case random_int(2) > 1 of
         true -> ret_conn(test_ers_pool, Conn);
         false -> 
           timer:sleep(6050),
@@ -159,6 +157,22 @@ t(5) ->
 t(6) ->
   ?INF("Pid", self()).
 
+
+%% MISC
+milliseconds() ->
+  {Me, S, M} = os:timestamp(),
+  (Me*1000000 + S)*1000 + round(M/1000).
+
+%
+random_int(1) -> 1;
+random_int(N) ->
+  {A,B,C} = erlang:timestamp(),
+  random:seed(A,B,C),
+  random:uniform(N).
+random_int(S, T) when S > 0, T > 0, T > S ->
+  {A,B,C} = erlang:timestamp(),
+  random:seed(A,B,C),
+  random:uniform(T-S+1)+S-1.
 
 
 

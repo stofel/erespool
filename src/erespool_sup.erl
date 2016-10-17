@@ -8,7 +8,7 @@
 -behaviour(supervisor).
 
 %% API
--export([start_link/0]).
+-export([start_link/2]).
 
 %% Supervisor callbacks
 -export([init/1]).
@@ -19,28 +19,26 @@
 %% API functions
 %%====================================================================
 
-start_link() ->
-    supervisor:start_link({local, ?SERVER}, ?MODULE, []).
+start_link(Name, Args) ->
+    supervisor:start_link(?MODULE, [Name, Args]).
 
 %%====================================================================
 %% Supervisor callbacks
 %%====================================================================
 
 %% 
-init([]) ->
+init([Name, Args]) ->
 
-    SupFlags = #{strategy    => simple_one_for_one,
-                 intensity   => 5,   
-                 period      => 10}, 
+    SupFlags = #{strategy    => one_for_one,
+                 intensity   => 5,
+                 period      => 10},
 
-    ChildPool = #{id         => erespool_pool,
+    ChildPool = #{id         => Name,
                   type       => worker,
-                  start      => {erespool_pool, start_link, []},
-                  modules    => [erespool_pool],
+                  start      => {erespool, start_link, [Name, Args]},
+                  modules    => [erespool],
                   restart    => transient,
                   shutdown   => 2000},
 
-
     {ok, {SupFlags, [ChildPool]}}.
-
 

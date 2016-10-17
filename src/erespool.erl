@@ -1,4 +1,4 @@
--module(erespool_pool).
+-module(erespool).
 
 -behaviour(gen_server).
 
@@ -57,9 +57,9 @@ init(Args = #{name := Name}) ->
   {ok, InitS}.
 
 %
-terminate(normal, #{orig_conns := []}) -> 
+terminate(R, #{orig_conns := []}) when R == normal; R == shutdown -> 
   ok;
-terminate(normal, #{conf := Conf, orig_conns := OConns}) ->
+terminate(R, #{conf := Conf, orig_conns := OConns}) when R == normal; R == shutdown ->
   {M,F,A} = maps:get(conn_stop_mfa, Conf),
   [erlang:apply(M,F,[C|A]) || C <- OConns],
   ok;
