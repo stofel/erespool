@@ -1,7 +1,8 @@
 erespool
 =====
 
-An OTP application like episcina but with blackjack
+An OTP application like episcina but with blackjack.
+
 Erespool is designed as a pool for resources, with a variable amount of workers.
 Each worker is a Pid.
 
@@ -16,7 +17,7 @@ Usage
 -----
 
 Start Pool test_ers_pool
-'''
+```
   Name = test_ers_pool,
   Args = #{
       cnum_min => 3,    %% Min workers
@@ -26,21 +27,21 @@ Start Pool test_ers_pool
       conn_stop_mfa  => {ers_worker_emulator, stop,  []}  %% Stop worker MFA
     },
   ers:start(Name, Args).
-'''
+```
 
 Get worker pid
-'''
+```
 ers:get_cons(test_ers_pool).
-'''
+```
 
 Return worker pid to pool
-'''
+```
 ers:ret_cons(test_ers_pool).
-'''
+```
 
 Stop pool
-'''
+```
 ers:stop(test_ers_pool).
-'''
+```
 
 See ers.erl for more command options.
