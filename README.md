@@ -16,7 +16,7 @@ Build
 Usage
 -----
 
-Start Pool test_ers_pool
+Start Pool test_ers_pool with test ers_worker_emulator
 ```
   Name = test_ers_pool,
   Args = #{
