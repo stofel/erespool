@@ -31,12 +31,12 @@ Start Pool test_ers_pool
 
 Get worker pid
 ```
-ers:get_cons(test_ers_pool).
+{ok, Pid} = ers:get_cons(test_ers_pool).
 ```
 
 Return worker pid to pool
 ```
-ers:ret_cons(test_ers_pool).
+ers:ret_cons(test_ers_pool, Pid).
 ```
 
 Stop pool
