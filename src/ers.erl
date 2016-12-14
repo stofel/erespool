@@ -165,14 +165,8 @@ milliseconds() ->
 
 %
 random_int(1) -> 1;
-random_int(N) ->
-  {A,B,C} = erlang:timestamp(),
-  random:seed(A,B,C),
-  random:uniform(N).
-random_int(S, T) when S > 0, T > 0, T > S ->
-  {A,B,C} = erlang:timestamp(),
-  random:seed(A,B,C),
-  random:uniform(T-S+1)+S-1.
+random_int(N) -> rand:uniform(N).
+random_int(S, T) when S > 0, T > 0, T > S -> rand:uniform(T-S+1)+S-1.
 
 
 
