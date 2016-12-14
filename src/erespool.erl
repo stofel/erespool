@@ -14,7 +14,7 @@
 
 -export([get_conn/3, ret_conn/2, state/1, stat/1]).
 
--include("erespool.hrl").
+-include("../include/erespool.hrl").
 
 start(Name, Args) ->
   supervisor:start_child(erespool_sup, [Name, Args]).
@@ -216,7 +216,7 @@ add_conn(#{conf := Conf}) ->
       try
         erlang:apply(M,F,A)
       catch
-        E:R -> ?e(E, R)
+        E:R -> ?e(E, {R, {M,F,A}})
       end,
     gen_server:cast(Pid, {add_conn, Res}) 
   end).
