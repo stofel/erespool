@@ -118,7 +118,7 @@ stat_(S = #{q := Q, conns := Cs, orig_conns := OCs, conf := Conf}) ->
 %% GET CONNECTION
 get_conn(PoolName, LeaseTime, Timeout) ->
   case is_pid(whereis(PoolName)) of
-    true  -> gen_server:call(PoolName, {get_conn, LeaseTime, Timeout, self()}, Timeout+100);
+    true  -> gen_server:call(PoolName, {get_conn, LeaseTime, Timeout, self()}, Timeout+5000);
     false -> ?e(pool_not_found)
   end.
 
