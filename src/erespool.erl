@@ -2,7 +2,7 @@
 
 -behaviour(gen_server).
 
--export([start/2, stop/1, start_link/2]).
+-export([start_link/2]).
 
 -export([init/1,
          handle_call/3,
@@ -16,15 +16,6 @@
 
 -include("../include/erespool.hrl").
 
-start(Name, Args) ->
-  supervisor:start_child(erespool_sup, [Name, Args]).
-
-stop(Name) ->
-  case is_pid(whereis(Name)) of
-    true  -> gen_server:stop(Name);
-    false -> ?e(pool_not_found)
-  end.
-
 
 start_link(Name, Args) when is_atom(Name) ->
   MandatoryArgsFields = [
@@ -36,12 +27,12 @@ start_link(Name, Args) when is_atom(Name) ->
   ],
   case lists:member(u, MandatoryArgsFields) of
     true  -> {err, {wrong_args, ?p}};
-    false -> gen_server:start_link({local, Name}, ?MODULE, Args#{name => Name}, [])
+    false -> gen_server:start_link({local, Name}, ?MODULE, #{name => Name, args => Args}, [])
   end.
 
 
 
-init(Args = #{name := Name}) ->
+init(#{name := Name, args := Args}) ->
   erlang:process_flag(trap_exit, true),
 
   S = #{
@@ -83,6 +74,7 @@ handle_cast({add_conn, Conn}, S)    -> add_conn_(S, Conn);
 handle_cast(Msg, S)                 -> io:format("Unk msg ~p~n", [{?p, Msg}]), {noreply, S, 0}.
 %%calls
 handle_call({get_conn,LT,T,P},F, S) -> get_conn_(F, S, LT, T, P);
+handle_call(name,_F,S=#{name := Name}) -> {reply, Name, S, 0};
 handle_call(state, _F, S)           -> state_(S);
 handle_call(stat, _F, S)            -> stat_(S);
 handle_call(Req,_From, S)           -> {reply, {err, unknown_command, ?p(Req)}, S, 0}.
@@ -116,6 +108,8 @@ stat_(S = #{q := Q, conns := Cs, orig_conns := OCs, conf := Conf}) ->
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% GET CONNECTION
+get_conn(Pool, LeaseTime, Timeout) when is_pid(Pool) ->
+   gen_server:call(Pool, {get_conn, LeaseTime, Timeout, self()}, Timeout+5000);
 get_conn(PoolName, LeaseTime, Timeout) ->
   case is_pid(whereis(PoolName)) of
     true  -> gen_server:call(PoolName, {get_conn, LeaseTime, Timeout, self()}, Timeout+5000);

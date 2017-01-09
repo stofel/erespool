@@ -10,7 +10,7 @@
 % tests
 -export([t_start/0, t_stop/0, t/1]).
 
--include("erespool.hrl").
+-include("../include/erespool.hrl").
 
 -type err() :: {err, {atom(), binary()}}. 
 
@@ -50,21 +50,21 @@ get_conn(PoolName) ->
 
 %% @doc Get a worker pid on LeaseTime milliseconds lease, 
 %%      wait at most 3 seconds before giving up.
--spec get_conn(atom(), integer()) -> {ok, pid()}|timeout|err().
-get_conn(PoolName, LeaseTime) ->
-  get_conn(PoolName, LeaseTime, 3000).
+-spec get_conn(atom()|pid(), integer()) -> {ok, pid()}|timeout|err().
+get_conn(Pool, LeaseTime) ->
+  get_conn(Pool, LeaseTime, 3000).
 
 %% @doc Get a worker pid on LeaseTime milliseconds lease, 
 %%      wait at most Timeout milliseconds before giving up.
--spec get_conn(atom(), integer(), integer()) -> {ok, pid()}|timeout|err().
-get_conn(PoolName, LeaseTime, Timeout) ->
-  erespool:get_conn(PoolName, LeaseTime, Timeout).
+-spec get_conn(atom()|pid(), integer(), integer()) -> {ok, pid()}|timeout|err().
+get_conn(Pool, LeaseTime, Timeout) ->
+  erespool:get_conn(Pool, LeaseTime, Timeout).
 
 
 %% @doc Retrun worker pid to the pool
--spec ret_conn(atom(), pid()) -> ok|err().
-ret_conn(PoolName, Conn) -> 
-  erespool:ret_conn(PoolName, Conn).
+-spec ret_conn(atom()|pid(), pid()) -> ok|err().
+ret_conn(Pool, Conn) -> 
+  erespool:ret_conn(Pool, Conn).
   
 
 

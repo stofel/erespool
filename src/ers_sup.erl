@@ -13,6 +13,8 @@
 %% Supervisor callbacks
 -export([init/1]).
 
+-include("../include/erespool.hrl").
+
 
 -define(SERVER, ?MODULE).
 
@@ -45,10 +47,20 @@ start_pool(Name, Args) ->
                 restart    => temporary,
                 shutdown   => 2000},
 
-  supervisor:start_child(ers_sup, ChildPool).
+  case supervisor:start_child(?MODULE, ChildPool) of
+    {ok, _Pid} -> {ok, erlang:whereis(Name)};
+    Else -> Else
+  end.
 
+
+stop_pool(Pid) when is_pid(Pid) ->
+  Name = gen_server:call(Pid, name),
+  stop_pool(Name);
 
 stop_pool(Name) ->
-  supervisor:terminate_child(ers_sup, Name).
-  
-  
+  case supervisor:get_childspec(?MODULE, Name) of
+    {ok, #{id := Id}}  -> supervisor:terminate_child(?MODULE, Id);
+    {error, not_found} -> ?e(no_such_pool);
+    Else               -> ?e(unknown_error, Else)
+  end.
+
